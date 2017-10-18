@@ -213,10 +213,16 @@ export GIT_SSH="${WORKSPACE}/custom_ssh"
 # Clone Cartridge
 echo "INFO: cloning ${CARTRIDGE_CLONE_URL}"
 # we do not want to show the password
+
 set +x
-if ( [ ${CARTRIDGE_CLONE_URL%://*} == "https" ] ||  [ ${CARTRIDGE_CLONE_URL%://*} == "http" ] ) && [ -f ${WORKSPACE}/${SCM_KEY} ]; then
-	source ${WORKSPACE}/${SCM_KEY}
-	git clone ${CARTRIDGE_CLONE_URL%://*}://${SCM_USERNAME}:${SCM_PASSWORD}@${CARTRIDGE_CLONE_URL#*://} cartridge
+PROTOCOL=${CARTRIDGE_CLONE_URL%://*}
+SCM_KEY_PATH=${WORKSPACE}@tmp/secretFiles/${SCM_KEY}
+
+if ( [ ${PROTOCOL} == "https" ] || [ ${PROTOCOL} == "http" ] ) && [ -f ${SCM_KEY_PATH} ]; then
+
+    BITBUCKET_REPOSITORY="${CARTRIDGE_CLONE_URL#*@}"
+    source ${SCM_KEY_PATH}
+    git clone ${PROTOCOL}://${SCM_USERNAME}:${SCM_PASSWORD}@${BITBUCKET_REPOSITORY} cartridge
 else
     git clone ${CARTRIDGE_CLONE_URL} cartridge
 fi
